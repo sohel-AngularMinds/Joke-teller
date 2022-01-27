@@ -1,0 +1,72 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+.shadow {
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+}
+.my-class {
+    margin-top:15px;
+}
+
+.form-check-input:checked {
+    background-color: #0b1031;
+    border-color: #fff;
+}
+
+.my-container {
+    background-color:#0b1031;
+    padding:30px;
+    color:white;
+    border-radius: 10px;
+}
+
+.edit-row {
+    margin:5px 0;
+}
+
+.guide-text {
+    text-align:start;    
+    font-size: 20px;
+    margin-top:20px;
+    font-weight: bold;
+}
+
+.options {
+    background-color:#323968;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+}
+
+/*for no-drop */
+
+.disable {
+    pointer-events: none;
+}
+
+.noDrop {
+    opacity:0.6;
+}
+
+.noDrop:hover {
+    cursor: no-drop;
+}
+
+.my-card {
+    background-color: #bebebe;
+    color:#0b1031;
+    border-left: 5px solid #0b1031;
+    border-radius: 10px;
+}
+
+.header {
+    font-size: 25px;
+    font-weight: bold; 
+    border-bottom: 2px solid #0b1031;
+}
+
+.Footer {
+    min-height: 80px;
+}
