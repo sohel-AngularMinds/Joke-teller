@@ -49,14 +49,7 @@ export class NavbarComponent extends Component {
                             <Navbar.Text className="h4 ps-2 text-light edit-btn" onClick={this.handleShow}>☰</Navbar.Text>
                             <Navbar.Text className="h4 ps-2 text-light">Menu</Navbar.Text>
                         </div>
-                        <Navbar.Text className={`text-light animate__rollIn`}
-
-                            onMouseEnter={this.handleHover}
-
-                            onMouseOut={this.handleOut}
-
-                            style={{ fontWeight: "bold", fontSize: "20px" }}
-                        >Joke Teller App</Navbar.Text>
+                        <Navbar.Text className='text-light'><span className="zoomIn">Joke Teller App</span></Navbar.Text>
 
                         <Navbar.Brand className="text-light">V1.0</Navbar.Brand>
 

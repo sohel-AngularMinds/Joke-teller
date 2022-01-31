@@ -6,7 +6,71 @@ import Checkbox from '../Checkbox/Checkbox';
 import { get } from '../Service/Service'
 
 
-const onSubmit = (values) => { console.log(values) }
+const onSubmit = (values, getUrl, state, setState) => {
+    let url = getUrl(values);
+
+
+    async function getData() {
+        let res = await get(url);
+        
+        if (res.error) {
+            
+            let newState = state;
+            newState.error = "Error while finalizing joke filtering: No jokes were found that match your provided filter(s)."
+            setState(newState);
+        }
+        else {
+            let { amount } = res;
+            console.log(res);
+            
+            if (amount === undefined) {
+                let { joke, delivery, type, setup} = res;
+                
+                let newState = state;
+                newState.joke = [joke];
+                newState.error = '';
+                if (type === "twopart")
+                    newState.joke = [setup,delivery];
+
+                setState(newState);
+            }
+            else {
+                let { jokes } = res;
+                let joke = [];
+                
+                for (let i = 0; i < jokes.length; i++){
+                    
+                    
+                    if (jokes[i].type === 'single')
+                    {
+                        joke.push(jokes[i].joke);
+                    }
+                    
+                    else {
+                        joke.push(jokes[i].setup);
+                        joke.push(jokes[i].delivery)
+                    }
+
+
+                    if (i < amount - 1)
+                    { 
+                        joke.push('----------------------------------------------');
+                    }
+
+                }
+                // ----------------------------------------------
+                let newState = state;
+                newState.joke = joke;
+                newState.error = '';
+                setState(newState);
+            }
+        }
+    }
+    getData();
+
+
+
+}
 
 const validate = values => {
     let errors = {};
@@ -76,7 +140,7 @@ const initialValues = {
     jokeType: [{ value: true, name: "single" }, { value: true, name: "twopart" }],
     searchString: '',
     idFrom: 0,
-    idTo: 1368,
+    idTo: 0,
     amountOfJoke: 1,
     url: 'https://v2.jokeapi.dev/joke/'
 }
@@ -93,21 +157,40 @@ export class Homepage extends Component {
             onSubmit,
             validate,
             apiData: {},
+            joke: ['(Set parameters and click "Send Request" above)'],
+            error: '',
+            max: 0
         }
 
         this.checking = this.checking.bind(this);
         this.geturl = this.geturl.bind(this);
+        this.setter = this.setter.bind(this);
+        this.handleReset = this.handleReset.bind(this);
+    }
+
+    setter(newState) {
+        this.setState(newState);
+    }
+
+    handleReset(resetForm) {
+        if (window.confirm("Are you sure to reset")) {
+            resetForm();
+            this.setState({initialValues});
+        }
     }
 
     checking(e, values) {
         values.defaultLanguage = e.target.value;
         values.idFrom = this.state.apiData.idRange[e.target.value][0];
         values.idTo = this.state.apiData.idRange[e.target.value][1];
-        this.setState({ intitialValues: values });
+
+        this.setState({ intitialValues: values, max: this.state.apiData.idRange[e.target.value][1] });
     }
 
     geturl(values) {
         let url = this.state.initialValues.url;
+        let { idRange } = this.state.apiData
+        
         //For Category
         if (values.category === "Any") {
             url += 'Any';
@@ -142,10 +225,10 @@ export class Homepage extends Component {
             url += `?lang=${values.defaultLanguage}`
         }
 
-        console.log(values);
-        
-        let { blacklist, jokeType,searchString } = values;
-        
+
+
+        let { amountOfJoke, blacklist, jokeType, searchString, idFrom, idTo } = values;
+
         let blacklistFlag = [];
 
         //for blackListFlag
@@ -172,31 +255,52 @@ export class Homepage extends Component {
             }
         }
 
-        if (falseCount === 1)
-        { 
+        if (falseCount === 1) {
             let check = url.includes('?');
             if (check) {
-                url+=`&type=${jokeType[1 ^ falseIndex].name}`   
+                url += `&type=${jokeType[1 ^ falseIndex].name}`
             }
             else {
-                url+=`?type=${jokeType[1 ^ falseIndex].name}`
+                url += `?type=${jokeType[1 ^ falseIndex].name}`
             }
         }
 
-        if (searchString !== '')
-        {
-        let check = url.includes('?');
-            if (check)    
-            { 
+        if (searchString !== '') {
+            let check = url.includes('?');
+            if (check) {
                 url += `&contains=${searchString}`;
             }
             else {
                 url += `?contains=${searchString}`;
             }
         }
+
+        if (idRange) {
+            if ((idFrom !== 0) || ((idFrom === 0 && idTo < this.state.max))) {
+                let check = url.includes('?');
+                if (check) {
+                    url += `&idRange=${idFrom}-${idTo}`;
+                }
+                else {
+                    url += `?idRange=${idFrom}-${idTo}`;
+                }
+
+            }
+        }
+
+        if (amountOfJoke > 1) {
+            let check = url.includes('?');
+            if (check) {
+                url += `&amount=${amountOfJoke}`;
+            }
+            else {
+                url += `?amount=${amountOfJoke}`;
+            }
+
+        }
+
+
         
-
-
         return url;
     }
     //this method will called after render
@@ -204,24 +308,27 @@ export class Homepage extends Component {
         async function getData(self) {
             let res = await get('info');
             let { jokes } = res;
-            self.setState({ apiData: jokes })
+
+            let initialValue = self.state.initialValues;
+            initialValue.idTo = jokes.totalCount - 1;
+            self.setState({ initialValues: initialValue, apiData: jokes, max: jokes.totalCount - 1 })
         }
         getData(this);
     }
 
     render() {
-        // console.log(this.state);
+        
         return (
             <Formik
                 initialValues={this.state.initialValues}
                 validate={this.state.validate}
-                onSubmit={this.state.onSubmit}
+                onSubmit={(e) => this.state.onSubmit(e, this.geturl, this.state, this.setter)}
             >
                 {
-                    ({ values, handleChange, handleBlur, errors }) => (
+                    ({ values, handleChange, handleBlur, errors, resetForm }) => (
 
                         <div className="my-class">
-                            {/* {console.log(errors)} */}
+                            
                             <Container className="my-container shadow">
                                 <Form>
                                     <Row className="edit-row">
@@ -384,8 +491,7 @@ export class Homepage extends Component {
                                                         min="0"
                                                         name="idTo"
                                                         value={values.idTo}
-                                                        max={this.state.initialValues.idTo}
-
+                                                        max={this.state.max}
                                                     />
                                                 </div>
                                             </div>
@@ -402,6 +508,7 @@ export class Homepage extends Component {
                                                     id="to"
                                                     name="amountOfJoke"
                                                     value={values.amountOfJoke}
+                                                    min="1"
                                                 />
                                             </div>
                                         </Col>
@@ -411,9 +518,15 @@ export class Homepage extends Component {
                                         <Col className="options border rounded border-white p-2 mt-3">
                                             <div>
                                                 <div>
-                                                    URL :  {this.geturl(values)}
+                                                    URL :<span className="" name="url">{this.geturl(values)}</span>
+
                                                     <div>
-                                                        <Button type="reset" variant="light" className="mx-2 mt-2">Resert Form</Button>
+                                                        <Button
+                                                            type="button"
+                                                            variant="light"
+                                                            className="mx-2 mt-2"
+                                                            onClick={(values) => this.handleReset(resetForm,values)}
+                                                        >Reset Form</Button>
                                                         <Button type="submit" variant="light" className="mx-2 mt-2">{"Send Request >"}</Button>
                                                     </div>
                                                 </div>
@@ -428,14 +541,18 @@ export class Homepage extends Component {
                                                 <div className="header">
                                                     <span className="ml-2">{"</>Result "}</span>
                                                 </div>
-                                                <div className="Footer">
+                                                <div className="Footer p-4">
+                                                    
+                                                    {this.state.error ? <h6 className="m-2 text-danger">{this.state.error}</h6> :
+                                                        <>
+                                                            {this.state.joke.map((one, index) => <h6 key={index} className="m-2">{one}</h6>)}
+                                                        </>
+                                                    }
 
                                                 </div>
                                             </div>
                                         </Col>
                                     </Row>
-
-
                                 </Form>
                             </Container>
                         </div >
