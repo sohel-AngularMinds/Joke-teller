@@ -5,6 +5,8 @@ import './style.css';
 import Checkbox from '../Checkbox/Checkbox';
 import { get } from '../Service/Service'
 
+// const REACT_VERSION = React.version;
+
 
 const onSubmit = (values, getUrl, state, setState) => {
     let url = getUrl(values);
@@ -12,9 +14,9 @@ const onSubmit = (values, getUrl, state, setState) => {
 
     async function getData() {
         let res = await get(url);
-        
+
         if (res.error) {
-            
+
             let newState = state;
             newState.error = "Error while finalizing joke filtering: No jokes were found that match your provided filter(s)."
             setState(newState);
@@ -22,38 +24,36 @@ const onSubmit = (values, getUrl, state, setState) => {
         else {
             let { amount } = res;
             console.log(res);
-            
+
             if (amount === undefined) {
-                let { joke, delivery, type, setup} = res;
-                
+                let { joke, delivery, type, setup } = res;
+
                 let newState = state;
                 newState.joke = [joke];
                 newState.error = '';
                 if (type === "twopart")
-                    newState.joke = [setup,delivery];
+                    newState.joke = [setup, delivery];
 
                 setState(newState);
             }
             else {
                 let { jokes } = res;
                 let joke = [];
-                
-                for (let i = 0; i < jokes.length; i++){
-                    
-                    
-                    if (jokes[i].type === 'single')
-                    {
+
+                for (let i = 0; i < jokes.length; i++) {
+
+
+                    if (jokes[i].type === 'single') {
                         joke.push(jokes[i].joke);
                     }
-                    
+
                     else {
                         joke.push(jokes[i].setup);
                         joke.push(jokes[i].delivery)
                     }
 
 
-                    if (i < amount - 1)
-                    { 
+                    if (i < amount - 1) {
                         joke.push('----------------------------------------------');
                     }
 
@@ -147,7 +147,7 @@ const initialValues = {
 
 
 
-export class Homepage extends Component {
+class Homepage extends Component {
 
     constructor(props) {
         super(props);
@@ -168,6 +168,16 @@ export class Homepage extends Component {
         this.handleReset = this.handleReset.bind(this);
     }
 
+    //this method will called after render
+    async componentDidMount() {
+        let res = await get('info');
+        let { jokes } = res;
+        let initialValue = this.state.initialValues;
+        initialValue.idTo = jokes.totalCount - 1;
+        this.setState({ initialValues: initialValue, apiData: jokes, max: jokes.totalCount - 1 })
+    }
+
+
     setter(newState) {
         this.setState(newState);
     }
@@ -175,7 +185,7 @@ export class Homepage extends Component {
     handleReset(resetForm) {
         if (window.confirm("Are you sure to reset")) {
             resetForm();
-            this.setState({initialValues});
+            this.setState({ initialValues });
         }
     }
 
@@ -190,7 +200,7 @@ export class Homepage extends Component {
     geturl(values) {
         let url = this.state.initialValues.url;
         let { idRange } = this.state.apiData
-        
+
         //For Category
         if (values.category === "Any") {
             url += 'Any';
@@ -300,24 +310,12 @@ export class Homepage extends Component {
         }
 
 
-        
-        return url;
-    }
-    //this method will called after render
-    componentDidMount() {
-        async function getData(self) {
-            let res = await get('info');
-            let { jokes } = res;
 
-            let initialValue = self.state.initialValues;
-            initialValue.idTo = jokes.totalCount - 1;
-            self.setState({ initialValues: initialValue, apiData: jokes, max: jokes.totalCount - 1 })
-        }
-        getData(this);
+        return url;
     }
 
     render() {
-        
+
         return (
             <Formik
                 initialValues={this.state.initialValues}
@@ -326,10 +324,9 @@ export class Homepage extends Component {
             >
                 {
                     ({ values, handleChange, handleBlur, errors, resetForm }) => (
-
                         <div className="my-class">
-                            
-                            <Container className="my-container shadow">
+                            {/* {console.log(REACT_VERSION)}     */}
+                            <Container className="my-container shadow mb-4">
                                 <Form>
                                     <Row className="edit-row">
                                         <Col sm={3} className="guide-text"> Select category / categories : </Col>
@@ -525,7 +522,7 @@ export class Homepage extends Component {
                                                             type="button"
                                                             variant="light"
                                                             className="mx-2 mt-2"
-                                                            onClick={(values) => this.handleReset(resetForm,values)}
+                                                            onClick={(values) => this.handleReset(resetForm, values)}
                                                         >Reset Form</Button>
                                                         <Button type="submit" variant="light" className="mx-2 mt-2">{"Send Request >"}</Button>
                                                     </div>
@@ -542,13 +539,12 @@ export class Homepage extends Component {
                                                     <span className="ml-2">{"</>Result "}</span>
                                                 </div>
                                                 <div className="Footer p-4">
-                                                    
+
                                                     {this.state.error ? <h6 className="m-2 text-danger">{this.state.error}</h6> :
                                                         <>
                                                             {this.state.joke.map((one, index) => <h6 key={index} className="m-2">{one}</h6>)}
                                                         </>
                                                     }
-
                                                 </div>
                                             </div>
                                         </Col>

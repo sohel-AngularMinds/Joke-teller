@@ -1,22 +1,19 @@
 import React, { Component } from 'react';
 import Container from 'react-bootstrap/Container';
 import { Navbar, Offcanvas, Nav, NavDropdown } from 'react-bootstrap'
-import Homepage from '../Home/Homepage';
 
-export class NavbarComponent extends Component {
+
+class NavbarComponent extends Component {
 
     constructor(props) {
         super(props);
 
         this.state = {
             show: false,
-            hover: false
         }
 
         this.handleShow = this.handleShow.bind(this);
         this.handleHide = this.handleHide.bind(this);
-        this.handleHover = this.handleHover.bind(this)
-        this.handleOut = this.handleOut.bind(this);
     }
 
 
@@ -29,19 +26,11 @@ export class NavbarComponent extends Component {
     }
 
 
-    handleOut() {
-        this.setState({ hover: false })
-    }
-
-
-    handleHover() {
-        this.setState({ hover: true })
-    }
-
     render() {
         return (
             <>
-                <Navbar expand={false}
+                <Navbar
+                    expand={false}
                     style={{ backgroundColor: "#0b1031" }}
                 >
                     <Container fluid>
@@ -79,7 +68,6 @@ export class NavbarComponent extends Component {
                         </Offcanvas>
                     </Container>
                 </Navbar>
-                <Homepage />
             </>
         )
     }
