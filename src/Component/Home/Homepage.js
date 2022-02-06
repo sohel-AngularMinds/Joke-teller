@@ -383,6 +383,7 @@ class Homepage extends Component {
                                                     value={values.defaultLanguage}
                                                     onChange={(e) => { this.checking(e, values) }}
                                                     onBlur={handleBlur}
+                                                    data-testid="selectLanguage"
                                                 >
                                                     <option value="cs">cs-Czech</option>
                                                     <option value="de">de-German</option>
@@ -472,6 +473,7 @@ class Homepage extends Component {
                                                         name="idFrom"
                                                         min="0"
                                                         value={values.idFrom}
+                                                        data-testid="formRange"
                                                     />
                                                 </div>
 
@@ -489,6 +491,7 @@ class Homepage extends Component {
                                                         name="idTo"
                                                         value={values.idTo}
                                                         max={this.state.max}
+                                                        data-testid="toRange"
                                                     />
                                                 </div>
                                             </div>
